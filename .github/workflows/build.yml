@@ -21,21 +21,18 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Unzip project (if needed)
+    - name: Unzip project
       run: |
-        if ls *.zip 1> /dev/null 2>&1; then
-          echo "Found zip, extracting..."
-          unzip -o *.zip -d .
-        else
-          echo "No zip found, skipping unzip."
-        fi
+        unzip -o BrokeSMPV1-8-maven-fixed-pom.zip -d project
+        ls -R project
 
     - name: Build with Maven
       run: |
-        mvn -B clean package || (echo "❌ Maven build failed!" && cat target/surefire-reports/*.txt || true && exit 1)
+        cd project
+        mvn -B clean package || (echo "❌ Maven build failed!" && exit 1)
 
     - name: Upload built plugin
       uses: actions/upload-artifact@v4
       with:
         name: Plugin-JAR
-        path: target/*.jar
+        path: project/target/*.jar
