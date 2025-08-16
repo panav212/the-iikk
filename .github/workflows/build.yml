@@ -24,6 +24,7 @@ jobs:
     - name: Unzip project
       run: |
         unzip -o BrokeSMPV1-8-maven-fixed-pom.zip -d project
+        echo "📂 Listing files after unzip:"
         ls -R project
 
     - name: Build with Maven
