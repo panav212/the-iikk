@@ -1,10 +1,11 @@
-name: Build
+name: Build Plugin
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,14 +18,21 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Unzip project
-        run: |
-          unzip -o BrokeSMPV1-8-maven-fixed-pom.zip -d project
-          ls -R project
+          distribution: temurin
+          java-version: 21
+          cache: maven
 
       - name: Build with Maven
-        working-directory: project
-        run: mvn -B package --file pom.xml
+        run: mvn -B package --file pom.xml | tee build-log.txt
+
+      - name: Upload Build Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build-log.txt
+
+      - name: Upload Plugin Jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-jar
+          path: target/*.jar
