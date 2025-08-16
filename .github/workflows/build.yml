@@ -2,45 +2,44 @@ name: Build Plugin
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Unzip project
-        run: |
-          unzip "*.zip" -d extracted
-          cd extracted
-          ls -R
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          java-version: '21'
+          distribution: 'temurin'
           cache: maven
+
+      - name: Unzip if needed
+        run: |
+          if [ -f "BrokeSMPV1-8-maven-fixed-pom.zip" ]; then
+            unzip -o BrokeSMPV1-8-maven-fixed-pom.zip -d ./src || true
+          fi
 
       - name: Build with Maven
         run: |
-          cd extracted
-          mvn -B package --file pom.xml | tee build-log.txt
+          mvn -B package --file pom.xml | tee build.log
+        continue-on-error: false
+
+      - name: Upload Plugin JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: BrokeSMP-Plugin
+          path: target/*.jar
 
       - name: Upload Build Logs
         uses: actions/upload-artifact@v4
         with:
           name: build-logs
-          path: extracted/build-log.txt
-
-      - name: Upload Plugin Jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: plugin-jar
-          path: extracted/target/*.jar
+          path: build.log
