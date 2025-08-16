@@ -15,6 +15,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Unzip project
+        run: |
+          unzip "*.zip" -d extracted
+          cd extracted
+          ls -R
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -23,16 +29,18 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml | tee build-log.txt
+        run: |
+          cd extracted
+          mvn -B package --file pom.xml | tee build-log.txt
 
       - name: Upload Build Logs
         uses: actions/upload-artifact@v4
         with:
           name: build-logs
-          path: build-log.txt
+          path: extracted/build-log.txt
 
       - name: Upload Plugin Jar
         uses: actions/upload-artifact@v4
         with:
           name: plugin-jar
-          path: target/*.jar
+          path: extracted/target/*.jar
